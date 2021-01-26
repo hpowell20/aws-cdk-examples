@@ -6,12 +6,12 @@ from static_website.static_website_stack import StaticWebsiteStack
 
 
 # Set the values to be used in the stack
-# TODO: Change me
-PROJECT_CODE = 'project-code-ui'
+PROJECT_CODE = 'project-code'
 
 app = core.App()
+
 stage_name = app.node.try_get_context("stage_name")
-stack_name = f"{PROJECT_CODE}-{stage_name}"
+stack_name = f"{PROJECT_CODE}-{stage_name}-ui"
 
 StaticWebsiteStack(app, stack_name,
     project_code=PROJECT_CODE,

@@ -7,7 +7,7 @@ from rds_instance.vpc_stack import VpcStack
 
 # Set the values to be used in the stack
 # TODO: Change me
-PROJECT_CODE = 'project-code-db'
+PROJECT_CODE = 'project-code'
 
 app = core.App()
 

@@ -34,7 +34,7 @@ class VpcStack(Stack):
         )
 
         # Set the stack outputs
-        CfnOutput(self, "VpcId", value=vpc.vpc_id)
+        CfnOutput(self, "VpcId", value=vpc.vpc_id, export_name=vpc_name)
 
         # Prepares output attributes to be passed into other stacks
         self.output_props = props.copy()

@@ -1,11 +1,11 @@
-# Static Frontend Deployment
+# Elasticsearch Deployment
 
 This project is used to create the following AWS resources required to deploy
 the static website code:
 
-- S3 bucket
-- CloudFront distribution
-- Route 53 A record
+- Custom Security Group
+- Elasticsearch Domain
+
 
 ## SSM Parameter Store Configuration (Prior to deployment)
 
@@ -19,8 +19,7 @@ console; if you want to change defaults then set the value in ssm and redeploy.
 
 ** NOTE: **
 
-- This ARN value must be the one for the us-east-1 region or the CloudFront step
-  will fail.
+- This ARN value must be the one for the us-east-1 region
 
 ### Project Structure
 

@@ -13,12 +13,13 @@ app = core.App()
 stage_name = app.node.try_get_context("stage_name")
 stack_name = f"{PROJECT_CODE}-{stage_name}-ui"
 
-StaticWebsiteStack(app, stack_name,
+new StaticWebsiteStack(app, stack_name,
     project_code=PROJECT_CODE,
     stage_name=stage_name,
-    env=core.Environment(
-        account=os.environ["AWS_ACCOUNT"],
-        region=os.environ["AWS_REGION"])
+    env: {
+      account: process.env.AWS_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
+      region: process.env.AWS_REGION || process.env.CDK_DEFAULT_REGION
+    }
 )
 
 app.synth()

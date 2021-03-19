@@ -1,0 +1,4 @@
+-e .
+aws_cdk.aws-ec2==1.94.1
+aws-cdk.aws-elasticsearch==1.94.1
+aws-cdk.aws-ssm==1.94.1

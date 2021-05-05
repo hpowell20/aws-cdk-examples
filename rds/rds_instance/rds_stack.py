@@ -13,8 +13,8 @@ class RdsStack(Stack):
 
         # Create the security group for instance
         rds_access_sg = ec2.SecurityGroup(self, id="rds_access_sg",
-            vpc=props['vpc'],
-            security_group_name=f"{stage_name}-db-access-sg"
+                                          vpc=props['vpc'],
+                                          security_group_name=f"{stage_name}-db-access-sg"
         )
 
         Tags.of(rds_access_sg).add('Name', 'Database Instance Access Security Group')
@@ -33,13 +33,13 @@ class RdsStack(Stack):
         )
 
         # TODO: Change these values depending on dev, prod, etc.
-        instance_type=ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MEDIUM)
-        allocated_storage=25
-        multi_az=False
-        storage_encrypted=False
-        backup_retention=Duration.days(0) # Disabled for non prod enviroments
-        delete_automated_backups=True
-        deletion_protection=False
+        instance_type = ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL)
+        allocated_storage = 25
+        multi_az = False
+        storage_encrypted = False
+        backup_retention = Duration.days(0)  # Disabled for non prod enviroments
+        delete_automated_backups = True
+        deletion_protection = False
 
         # Create the RDS instance
         identifier = f"servus-{stage_name}-postgres"
@@ -49,25 +49,26 @@ class RdsStack(Stack):
         master_password = self.node.try_get_context("default_master_password")
 
         instance = rds.DatabaseInstance(self, "PostgresInstance",
-            instance_identifier=identifier,
-            credentials=rds.Credentials.from_username(master_username,
-                            password=SecretValue.plain_text(master_password)),
-            engine=rds.DatabaseInstanceEngine.postgres(
-                version=rds.PostgresEngineVersion.VER_12_3
-            ),
-            auto_minor_version_upgrade=False,
-            storage_encrypted=storage_encrypted,
-            backup_retention=backup_retention,
-            vpc=props['vpc'],
-            vpc_placement=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
-            security_groups=[rds_access_sg],
-            instance_type=instance_type,
-            allocated_storage=allocated_storage,
-            storage_type=rds.StorageType.GP2,
-            removal_policy=RemovalPolicy.DESTROY,
-            multi_az=multi_az,
-            delete_automated_backups=delete_automated_backups,
-            deletion_protection=deletion_protection
+                                        instance_identifier=identifier,
+                                        credentials=rds.Credentials.from_username(master_username,
+                                                                                  password=SecretValue.plain_text(
+                                                                                      master_password)),
+                                        engine=rds.DatabaseInstanceEngine.postgres(
+                                            version=rds.PostgresEngineVersion.VER_12_3
+                                        ),
+                                        auto_minor_version_upgrade=False,
+                                        storage_encrypted=storage_encrypted,
+                                        backup_retention=backup_retention,
+                                        vpc=props['vpc'],
+                                        vpc_placement=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+                                        security_groups=[rds_access_sg],
+                                        instance_type=instance_type,
+                                        allocated_storage=allocated_storage,
+                                        storage_type=rds.StorageType.GP2,
+                                        removal_policy=RemovalPolicy.DESTROY,
+                                        multi_az=multi_az,
+                                        delete_automated_backups=delete_automated_backups,
+                                        deletion_protection=deletion_protection
         )
 
         # Set the stack outputs

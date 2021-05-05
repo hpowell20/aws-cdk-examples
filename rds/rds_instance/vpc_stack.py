@@ -25,13 +25,12 @@ class VpcStack(Stack):
         # Create the VPC
         vpc_name = f"{stage_name}-custom-vpc"
         vpc = ec2.Vpc(self, vpc_name,
-            cidr="10.0.0.0/16",
-            max_azs=2,
-            enable_dns_hostnames=True,
-            enable_dns_support=True,
-            subnet_configuration=[public_subnet, private_subnet, db_subnet],
-            nat_gateways=2
-        )
+                      cidr="10.0.0.0/16",
+                      max_azs=2,
+                      enable_dns_hostnames=True,
+                      enable_dns_support=True,
+                      subnet_configuration=[public_subnet, private_subnet, db_subnet],
+                      nat_gateways=2)
 
         # Set the stack outputs
         CfnOutput(self, "VpcId", value=vpc.vpc_id, export_name=vpc_name)

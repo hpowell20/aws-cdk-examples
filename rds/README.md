@@ -2,7 +2,7 @@
 
 This project is used to create the database storage resources.  Services used includes:
 
-- Custom VPC
+- VPC
 - Postgres RDS instance
 - Database access security groups
 
@@ -15,14 +15,6 @@ This project is used to create the database storage resources.  Services used in
 NOTE:
 
 - To add additional dependencies (i.e. - other CDK libraries) simply add them to the `requirements.txt` file and rerun the `pip install -r requirements.txt` command
-
-### NPM Dependencies ###
-
-Ensure the AWS CDK is installed
-
-```
-npm install -g aws-cdk
-```
 
 ### Python Dependencies ###
 
@@ -57,7 +49,7 @@ pip install -r requirements.txt
 Synthesize the CloudFormation template
 
 ```
-cdk synth -c stage_name=test
+npx cdk synth -c stage_name=test
 ```
 
 ** NOTES: **
@@ -67,39 +59,33 @@ cdk synth -c stage_name=test
 Run the script to create the environment
 
 ```
-export AWS_PROFILE=test
-export AWS_ACCOUNT=123456789
-export AWS_REGION=ca-central-1
+export AWS_PROFILE=<profile_name>
+export AWS_ACCOUNT=<account_id>
+export AWS_REGION=<region_name>
 ./deploy-env.sh <stage_name>
 ```
 
-** NOTES: **
-
-- Replace **test** with your assume role profile name
-- Replace **123456789** with the AWS account ID
-- Please include your name for the stage name if you want to create custom AWS stack for testing purposes
+** NOTE: **
+- Replace values with your account details
 
 ### Remove Existing Stack ###
 
 Run the script to destroy the environment
 
 ```
-export AWS_PROFILE=test
-export AWS_ACCOUNT=123456789
-export AWS_REGION=ca-central-1
+export AWS_PROFILE=<profile_name>
+export AWS_ACCOUNT=<account_id>
+export AWS_REGION=<region_name>
 ./remove-env.sh <stage_name>
 ```
 
-** NOTES: **
-
-- Replace **test** with your assume role profile name
-- Replace **123456789** with the AWS account ID
-- Please include your name for the stage name if you want to create custom AWS stack for testing purposes
+** NOTE: **
+- Replace values with your account details
 
 ### Useful commands ###
 
-- `cdk ls` list all stacks in the app
-- `cdk synth` emits the synthesized CloudFormation template
-- `cdk deploy` deploy this stack to your default AWS account/region
-- `cdk diff` compare deployed stack with current state
-- `cdk docs` open CDK documentation
+- `npx cdk ls` list all stacks in the app
+- `npx cdk synth` emits the synthesized CloudFormation template
+- `npx cdk deploy` deploy this stack to your default AWS account/region
+- `npx cdk diff` compare deployed stack with current state
+- `npx cdk docs` open CDK documentation

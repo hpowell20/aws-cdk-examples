@@ -17,20 +17,23 @@ rds_stack_name = f"{PROJECT_CODE}-{stage_name}-rds"
 
 props = {'namespace': 'RdsInstanceStack'}
 
-account = os.environ["AWS_ACCOUNT"]
-region = os.environ["AWS_REGION"]
+account = os.environ.get("AWS_ACCOUNT", os.environ["CDK_DEFAULT_ACCOUNT"])
+if not account:
+    print('Account not specified via AWS_ACCOUNT or CDK_DEFAULT_ACCOUNT')
+    exit()
 
-account: process.env.AWS_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
-region: process.env.AWS_REGION || process.env.CDK_DEFAULT_REGION
+region = os.environ.get("AWS_REGION", os.environ["CDK_DEFAULT_REGION"])
+if not region:
+    print('Account not specified via AWS_REGION or CDK_DEFAULT_REGION')
+    exit()
 
 vpc_stack = VpcStack(app, vpc_stack_name,
                      stage_name=stage_name,
                      props=props,
                      description='Template for the application custom VPC',
                      env=core.Environment(
-                        account=os.environ["AWS_ACCOUNT"],
-                        region=os.environ["AWS_REGION"])
-)
+                        account=account,
+                        region=region))
 
 RdsStack(app, rds_stack_name,
          project_code=PROJECT_CODE,
@@ -38,7 +41,7 @@ RdsStack(app, rds_stack_name,
          props=vpc_stack.outputs,
          description='Template for the application database instance',
          env=core.Environment(
-            account=os.environ["AWS_ACCOUNT"],
-            region=os.environ["AWS_REGION"]))
+            account=account,
+            region=region))
 
 app.synth()

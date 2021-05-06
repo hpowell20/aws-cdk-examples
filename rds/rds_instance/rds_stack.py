@@ -1,5 +1,6 @@
 from aws_cdk import (
     aws_ec2 as ec2,
+    aws_lambda,
     aws_rds as rds
 )
 
@@ -42,7 +43,7 @@ class RdsStack(Stack):
         deletion_protection = False
 
         # Create the RDS instance
-        identifier = f"servus-{stage_name}-postgres"
+        identifier = f"{project_code}-{stage_name}-postgres"
 
         # TODO: Create a random password and set secrets manager values
         master_username = 'postgres'
@@ -75,3 +76,26 @@ class RdsStack(Stack):
         CfnOutput(self, "InstanceArn", value=instance.instance_arn)
         CfnOutput(self, "InstanceIdentifier", value=instance.instance_identifier)
         CfnOutput(self, "InstanceEndpoint", value=instance.db_instance_endpoint_address)
+
+        # Addition of Lambda jobs to start and stop the instance
+        start_db_lambda = aws_lambda.Function(self, "StartInstanceFunction",
+                                              function_name=f"{project_code}-{stage_name}-start-db-instance",
+                                              runtime=aws_lambda.Runtime.PYTHON_3_8,
+                                              handler='start_db_instance.handler',
+                                              code=aws_lambda.Code.asset('./lambda/start'),
+                                              environment={
+                                                  'DB_INSTANCE_NAME': identifier
+                                              })
+
+        # start_db_lambda.add_environment("DB_INSTANCE_NAME", identifier)
+
+        stop_db_lambda = aws_lambda.Function(self, "StopInstanceFunction",
+                                             function_name=f"{project_code}-{stage_name}-stop-db-instance",
+                                             runtime=aws_lambda.Runtime.PYTHON_3_8,
+                                             handler='stop_db_instance.handler',
+                                             code=aws_lambda.Code.asset('./lambda/stop'),
+                                             environment={
+                                                 'DB_INSTANCE_NAME': identifier
+                                             })
+
+        # stop_db_lambda.add_environment("DB_INSTANCE_NAME", identifier)

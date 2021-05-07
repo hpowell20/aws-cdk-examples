@@ -1,5 +1,6 @@
 from aws_cdk import (
     aws_ec2 as ec2,
+    aws_iam as iam,
     aws_lambda,
     aws_rds as rds
 )
@@ -27,7 +28,7 @@ class RdsStack(Stack):
             connection=ec2.Port.tcp(5432)
         )
 
-        # TODO: Remove the all rule
+        # Add all access to the instance; to be replaced
         rds_access_sg.add_ingress_rule(
             peer=ec2.Peer.any_ipv4(),
             connection=ec2.Port.tcp(5432)
@@ -38,7 +39,7 @@ class RdsStack(Stack):
         allocated_storage = 25
         multi_az = False
         storage_encrypted = False
-        backup_retention = Duration.days(0)  # Disabled for non prod enviroments
+        backup_retention = Duration.days(0)  # Disabled for non prod environments
         delete_automated_backups = True
         deletion_protection = False
 
@@ -46,16 +47,10 @@ class RdsStack(Stack):
         identifier = f"{project_code}-{stage_name}-postgres"
 
         # TODO: Create a random password and set secrets manager values
-        master_username = 'postgres'
-        master_password = self.node.try_get_context("default_master_password")
-
         instance = rds.DatabaseInstance(self, "PostgresInstance",
                                         instance_identifier=identifier,
-                                        credentials=rds.Credentials.from_username(master_username,
-                                                                                  password=SecretValue.plain_text(
-                                                                                      master_password)),
                                         engine=rds.DatabaseInstanceEngine.postgres(
-                                            version=rds.PostgresEngineVersion.VER_12_3
+                                            version=rds.PostgresEngineVersion.VER_13_1
                                         ),
                                         auto_minor_version_upgrade=False,
                                         storage_encrypted=storage_encrypted,
@@ -77,25 +72,37 @@ class RdsStack(Stack):
         CfnOutput(self, "InstanceIdentifier", value=instance.instance_identifier)
         CfnOutput(self, "InstanceEndpoint", value=instance.db_instance_endpoint_address)
 
+        # Assign a execution role to the Lambda functions
+        base = f'{project_code}-{stage_name}-triggers'
+        rds_access_role = iam.Role(self, 'RdsAccessRole',
+                                   role_name=f'{base}-{self.region}-lambdaRole',
+                                   assumed_by=iam.ServicePrincipal('lambda.amazonaws.com'))
+
+        rds_access_role.add_to_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            resources=[instance.instance_arn],
+            actions=['rds:DescribeDBInstances',
+                     'rds:StopDBInstance',
+                     'rds:StartDBInstance']
+        ))
+
         # Addition of Lambda jobs to start and stop the instance
-        start_db_lambda = aws_lambda.Function(self, "StartInstanceFunction",
-                                              function_name=f"{project_code}-{stage_name}-start-db-instance",
-                                              runtime=aws_lambda.Runtime.PYTHON_3_8,
-                                              handler='start_db_instance.handler',
-                                              code=aws_lambda.Code.asset('./lambda/start'),
-                                              environment={
-                                                  'DB_INSTANCE_NAME': identifier
-                                              })
+        aws_lambda.Function(self, "StartInstanceFunction",
+                            function_name=f"{project_code}-{stage_name}-start-db-instance",
+                            runtime=aws_lambda.Runtime.PYTHON_3_8,
+                            handler='start_db_instance.handler',
+                            code=aws_lambda.Code.asset('./lambda/start'),
+                            role=rds_access_role,
+                            environment={
+                                'DB_INSTANCE_NAME': identifier
+                            })
 
-        # start_db_lambda.add_environment("DB_INSTANCE_NAME", identifier)
-
-        stop_db_lambda = aws_lambda.Function(self, "StopInstanceFunction",
-                                             function_name=f"{project_code}-{stage_name}-stop-db-instance",
-                                             runtime=aws_lambda.Runtime.PYTHON_3_8,
-                                             handler='stop_db_instance.handler',
-                                             code=aws_lambda.Code.asset('./lambda/stop'),
-                                             environment={
-                                                 'DB_INSTANCE_NAME': identifier
-                                             })
-
-        # stop_db_lambda.add_environment("DB_INSTANCE_NAME", identifier)
+        aws_lambda.Function(self, "StopInstanceFunction",
+                            function_name=f"{project_code}-{stage_name}-stop-db-instance",
+                            runtime=aws_lambda.Runtime.PYTHON_3_8,
+                            handler='stop_db_instance.handler',
+                            code=aws_lambda.Code.asset('./lambda/stop'),
+                            role=rds_access_role,
+                            environment={
+                                'DB_INSTANCE_NAME': identifier
+                            })

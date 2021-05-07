@@ -1,5 +1,7 @@
 from aws_cdk import (
     aws_ec2 as ec2,
+    aws_events as events,
+    aws_events_targets as targets,
     aws_iam as iam,
     aws_lambda,
     aws_rds as rds
@@ -35,7 +37,7 @@ class RdsStack(Stack):
         )
 
         # TODO: Change these values depending on dev, prod, etc.
-        instance_type = ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.SMALL)
+        instance_type = ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE3, ec2.InstanceSize.SMALL)
         allocated_storage = 25
         multi_az = False
         storage_encrypted = False
@@ -64,8 +66,7 @@ class RdsStack(Stack):
                                         removal_policy=RemovalPolicy.DESTROY,
                                         multi_az=multi_az,
                                         delete_automated_backups=delete_automated_backups,
-                                        deletion_protection=deletion_protection
-        )
+                                        deletion_protection=deletion_protection)
 
         # Set the stack outputs
         CfnOutput(self, "InstanceArn", value=instance.instance_arn)
@@ -87,22 +88,51 @@ class RdsStack(Stack):
         ))
 
         # Addition of Lambda jobs to start and stop the instance
-        aws_lambda.Function(self, "StartInstanceFunction",
-                            function_name=f"{project_code}-{stage_name}-start-db-instance",
-                            runtime=aws_lambda.Runtime.PYTHON_3_8,
-                            handler='start_db_instance.handler',
-                            code=aws_lambda.Code.asset('./lambda/start'),
-                            role=rds_access_role,
-                            environment={
-                                'DB_INSTANCE_NAME': identifier
-                            })
+        start_db_function = aws_lambda.Function(self, "StartInstanceFunction",
+                                                function_name=f'{project_code}-{stage_name}-start-db-instance',
+                                                runtime=aws_lambda.Runtime.PYTHON_3_8,
+                                                handler='start_db_instance.handler',
+                                                code=aws_lambda.Code.asset('./lambda/start'),
+                                                role=rds_access_role,
+                                                environment={
+                                                    'DB_INSTANCE_NAME': identifier
+                                                })
 
-        aws_lambda.Function(self, "StopInstanceFunction",
-                            function_name=f"{project_code}-{stage_name}-stop-db-instance",
-                            runtime=aws_lambda.Runtime.PYTHON_3_8,
-                            handler='stop_db_instance.handler',
-                            code=aws_lambda.Code.asset('./lambda/stop'),
-                            role=rds_access_role,
-                            environment={
-                                'DB_INSTANCE_NAME': identifier
-                            })
+        # Set the job to run every day at 8:30AM UTC
+        rule = events.Rule(self, "StartDbRule",
+                           rule_name=f'{project_code}-{stage_name}-schedule_db_start',
+                           description='Starts the database instance at 8:30 Monday to Friday',
+                           enabled=True,
+                           schedule=events.Schedule.cron(
+                               minute='30',
+                               hour='10',
+                               month='*',
+                               week_day='MON-FRI',
+                               year='*'))
+
+        rule.add_target(targets.LambdaFunction(start_db_function))
+
+        # Addition of Lambda jobs to stop the instance
+        stop_db_function = aws_lambda.Function(self, "StopInstanceFunction",
+                                               function_name=f'{project_code}-{stage_name}-stop-db-instance',
+                                               runtime=aws_lambda.Runtime.PYTHON_3_8,
+                                               handler='stop_db_instance.handler',
+                                               code=aws_lambda.Code.asset('./lambda/stop'),
+                                               role=rds_access_role,
+                                               environment={
+                                                   'DB_INSTANCE_NAME': identifier
+                                               })
+
+        # Set the job to run every day at 4:30PM UTC
+        rule = events.Rule(self, "StopDbRule",
+                           rule_name=f'{project_code}-{stage_name}-schedule_db_stop',
+                           description='Stops the database instance at 4:30 Monday to Friday',
+                           enabled=True,
+                           schedule=events.Schedule.cron(
+                               minute='30',
+                               hour='20',
+                               month='*',
+                               week_day='MON-FRI',
+                               year='*'))
+
+        rule.add_target(targets.LambdaFunction(stop_db_function))

@@ -5,7 +5,7 @@ from aws_cdk.core import Construct, CfnOutput, Stack
 
 class VpcStack(Stack):
 
-    def __init__(self, scope: Construct, id: str, stage_name: str, props, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, stage_name: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Subnet configurations for a public and private tier
@@ -36,9 +36,8 @@ class VpcStack(Stack):
         CfnOutput(self, "VpcId", value=vpc.vpc_id, export_name=vpc_name)
 
         # Prepares output attributes to be passed into other stacks
-        self.output_props = props.copy()
-        self.output_props['vpc'] = vpc
+        self._vpc = vpc
 
     @property
-    def outputs(self):
-        return self.output_props
+    def vpc_ref(self) -> ec2.IVpc:
+        return self._vpc

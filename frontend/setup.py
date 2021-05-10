@@ -6,7 +6,7 @@ with open("README.md") as fp:
 
 
 setuptools.setup(
-    name="project-code-ui.static_website",
+    name="frontend-ui.static_website",
     version="0.0.1",
 
     description="The deployment stack for the static web site",
@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(where="static_website"),
 
     install_requires=[
-        "aws-cdk.core==1.94.1"
+        "aws-cdk.core==1.102.0"
     ],
 
     python_requires=">=3.6",

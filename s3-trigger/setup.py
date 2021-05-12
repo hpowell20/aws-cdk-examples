@@ -6,30 +6,24 @@ with open("README.md") as fp:
 
 
 setuptools.setup(
-    name="rds_instance_stack",
+    name="s3-trigger",
     version="0.0.1",
 
-    description="The deployment stack for the RDS database",
+    description="A CDK Python app for deploying an S3 bucket with a trigger to write to a Dynamo table",
     long_description=long_description,
     long_description_content_type="text/markdown",
 
-    author="Howard Powell",
+    author="author",
 
-    package_dir={"": "rds_instance"},
-    packages=setuptools.find_packages(where="rds_instance"),
+    package_dir={"": "s3_trigger"},
+    packages=setuptools.find_packages(where="s3_trigger"),
 
-    install_requires=[
-        "aws-cdk.core==1.103.0"
-    ],
-
-    python_requires=">=3.6",
+    python_requires=">=3.8",
 
     classifiers=[
         "Development Status :: 4 - Beta",
 
         "Intended Audience :: Developers",
-
-        "License :: OSI Approved :: Apache Software License",
 
         "Programming Language :: JavaScript",
         "Programming Language :: Python :: 3 :: Only",

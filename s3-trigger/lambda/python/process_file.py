@@ -10,7 +10,7 @@ def handler(event, context):
 
     # Create a new DynamoDB record for the result
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(os.environ['FILE_UPLOAD_TABLE'])
+    table = dynamodb.Table(os.environ['FILE_UPLOAD_TABLE_NAME'])
 
     table.put_item(
         Item={

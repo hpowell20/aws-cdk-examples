@@ -2,7 +2,7 @@ const AWS = require('aws-sdk');
 const db = new AWS.DynamoDB.DocumentClient();
 const uuid_v4 = require('uuid/v4');
 const FILE_UPLOAD_BUCKET_NAME = process.env.FILE_UPLOAD_BUCKET_NAME || '';
-const FILE_UPLOAD_TABLE = process.env.FILE_UPLOAD_TABLE || '';
+const FILE_UPLOAD_TABLE_NAME = process.env.FILE_UPLOAD_TABLE_NAME || '';
 
 const RESERVED_RESPONSE = `Error: AWS reserved keywords being used as keywords`;
 const DYNAMODB_EXECUTION_ERROR = `Error: DynamoDB error; please take a look at your CloudWatch Logs`;

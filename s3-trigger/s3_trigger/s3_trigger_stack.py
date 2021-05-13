@@ -64,7 +64,7 @@ class S3TriggerStack(Stack):
                                            # role=s3_access_role,
                                            environment={
                                                'FILE_UPLOAD_BUCKET_NAME': upload_bucket.bucket_name,
-                                               'FILE_UPLOAD_TABLE': file_upload_table.table_name
+                                               'FILE_UPLOAD_TABLE_NAME': file_upload_table.table_name
                                            })
 
         # Create a trigger for the Lambda function

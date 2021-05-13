@@ -18,7 +18,7 @@ setuptools.setup(
     package_dir={"": "s3_trigger"},
     packages=setuptools.find_packages(where="s3_trigger"),
 
-    python_requires=">=3.8",
+    python_requires=">=3.6",
 
     classifiers=[
         "Development Status :: 4 - Beta",

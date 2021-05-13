@@ -53,13 +53,10 @@ class S3TriggerStack(Stack):
         #                           role_name=f'{base}-{self.region}-lambdaRole',
         #                           assumed_by=iam.ServicePrincipal('lambda.amazonaws.com'))
 
-        lambda_function = _lambda.Function(self, 'UpdateUploadTableFunction',
-                                           function_name=f'{project_code}-{stage_name}-s3-dynamo-trigger',
-                                           # runtime=_lambda.Runtime.NODEJS_14_X,
-                                           # handler='process-file.handler',
-                                           # code=_lambda.Code.asset('./lambda/typescript'),
+        lambda_function = _lambda.Function(self, 'ObjectCreateTableFunction',
+                                           function_name=f'{project_code}-{stage_name}-s3-object-create',
                                            runtime=_lambda.Runtime.PYTHON_3_8,
-                                           handler='process_file.handler',
+                                           handler='object-created.handler',
                                            code=_lambda.Code.asset('./lambda/python'),
                                            # role=s3_access_role,
                                            environment={
@@ -72,6 +69,8 @@ class S3TriggerStack(Stack):
         notification.bind(self, upload_bucket)
         upload_bucket.add_object_created_notification(notification)
 
-        # Grant permissions for Lambda to read/write to the DynamoDB table and S3 bucket
+        # Grant permissions for Lambda to read/write to the DynamoDB table
         file_upload_table.grant_read_write_data(lambda_function)
-        upload_bucket.grant_read_write(lambda_function)
+
+        # Grant permissions for Lambda to read only from the S3 bucket
+        upload_bucket.grant_read(lambda_function)

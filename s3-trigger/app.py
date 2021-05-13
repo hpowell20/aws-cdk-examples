@@ -5,7 +5,7 @@ from aws_cdk import core
 from s3_trigger.s3_trigger_stack import S3TriggerStack
 
 # Set the values to be used in the stack
-PROJECT_CODE = 's3-triggers'
+PROJECT_CODE = 'upload-manager'
 
 app = core.App()
 

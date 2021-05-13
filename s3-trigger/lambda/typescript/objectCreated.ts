@@ -1,3 +1,4 @@
+// TODO: Requires package.json and tsconfig.json to run the code
 const AWS = require('aws-sdk');
 const db = new AWS.DynamoDB.DocumentClient();
 const uuid_v4 = require('uuid/v4');

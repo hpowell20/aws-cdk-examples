@@ -47,29 +47,48 @@ class S3TriggerStack(Stack):
 
         CfnOutput(self, "FileUploadTableName", value=file_upload_table.table_name)
 
-        # Add a Lambda trigger to write a record in the table
         # base = f'{project_code}-{stage_name}-s3'
         # s3_access_role = iam.Role(self, 'S3TriggerAccessRole',
         #                           role_name=f'{base}-{self.region}-lambdaRole',
         #                           assumed_by=iam.ServicePrincipal('lambda.amazonaws.com'))
 
-        lambda_function = _lambda.Function(self, 'ObjectCreateTableFunction',
-                                           function_name=f'{project_code}-{stage_name}-s3-object-create',
-                                           runtime=_lambda.Runtime.PYTHON_3_8,
-                                           handler='object_created.handler',
-                                           code=_lambda.Code.asset('./lambda/python'),
-                                           environment={
-                                               'FILE_UPLOAD_TABLE_NAME': file_upload_table.table_name
-                                           })
+        # Add a Lambda trigger to write a record in the table upon object creation
+        create_lambda_function = _lambda.Function(self, 'ObjectCreateTableFunction',
+                                                  function_name=f'{project_code}-{stage_name}-s3-object-create',
+                                                  runtime=_lambda.Runtime.PYTHON_3_8,
+                                                  handler='object_created.handler',
+                                                  code=_lambda.Code.asset('./lambda/python/create'),
+                                                  environment={
+                                                     'FILE_UPLOAD_TABLE_NAME': file_upload_table.table_name
+                                                  })
 
-        # Create a trigger for the Lambda function
-        notification = notifications.LambdaDestination(lambda_function)
-        notification.bind(self, upload_bucket)
-        upload_bucket.add_object_created_notification(notification)
-        upload_bucket.add_object_removed_notification(notification)
+        # Create a trigger for the create object Lambda function
+        create_notification = notifications.LambdaDestination(create_lambda_function)
+        create_notification.bind(self, upload_bucket)
+        upload_bucket.add_object_created_notification(create_notification)
 
         # Grant permissions for Lambda to read/write to the DynamoDB table
-        file_upload_table.grant_read_write_data(lambda_function)
+        file_upload_table.grant_read_write_data(create_lambda_function)
 
         # Grant permissions for Lambda to read only from the S3 bucket
-        upload_bucket.grant_read(lambda_function)
+        upload_bucket.grant_read(create_lambda_function)
+
+        # Add a Lambda trigger to remove a record from the table upon object removal
+        remove_lambda_function = _lambda.Function(self, 'ObjectRemoveTableFunction',
+                                                  function_name=f'{project_code}-{stage_name}-s3-object-remove',
+                                                  runtime=_lambda.Runtime.PYTHON_3_8,
+                                                  handler='object_removed.handler',
+                                                  code=_lambda.Code.asset('./lambda/python/remove'),
+                                                  environment={
+                                                      'FILE_UPLOAD_TABLE_NAME': file_upload_table.table_name
+                                                  })
+        # Create a trigger for the remove object Lambda function
+        remove_notification = notifications.LambdaDestination(remove_lambda_function)
+        remove_notification.bind(self, upload_bucket)
+        upload_bucket.add_object_removed_notification(remove_notification)
+
+        # Grant permissions for Lambda to read/write to the DynamoDB table
+        # file_upload_table.grant_read_write_data(remove_lambda_function)
+
+        # Grant permissions for Lambda to read only from the S3 bucket
+        upload_bucket.grant_read(remove_lambda_function)

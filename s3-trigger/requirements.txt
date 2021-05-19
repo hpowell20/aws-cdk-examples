@@ -1,7 +1,7 @@
 -e .
-aws-cdk.core==1.104.0
-aws-cdk.aws-dynamodb==1.104.0
-aws_cdk.aws-iam==1.104.0
-aws-cdk.aws-lambda==1.104.0
-aws-cdk.aws-s3==1.104.0
-aws-cdk.aws_s3_notifications==1.104.0
+aws-cdk.core==1.105.0
+aws-cdk.aws-dynamodb==1.105.0
+aws_cdk.aws-iam==1.105.0
+aws-cdk.aws-lambda==1.105.0
+aws-cdk.aws-s3==1.105.0
+aws-cdk.aws_s3_notifications==1.105.0

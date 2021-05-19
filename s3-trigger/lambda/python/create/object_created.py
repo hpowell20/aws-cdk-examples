@@ -25,7 +25,7 @@ def handler(event, context):
     table.put_item(
         Item={
             'id': str(uuid.uuid4()),
-            'file_name': key,
+            'key_name': key,
             'bucket_name': bucket,
             'created_at': s3_time
         }

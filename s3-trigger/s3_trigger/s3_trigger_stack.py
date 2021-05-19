@@ -45,6 +45,13 @@ class S3TriggerStack(Stack):
                                            point_in_time_recovery=True,
                                            encryption=dynamodb.TableEncryption.AWS_MANAGED)
 
+        # Add a GSI for the key name
+        file_upload_table.add_global_secondary_index(index_name='key-index',
+                                                     partition_key=dynamodb.Attribute(
+                                                        name='key_name',
+                                                        type=dynamodb.AttributeType.STRING),
+                                                     projection_type=dynamodb.ProjectionType.KEYS_ONLY)
+
         CfnOutput(self, "FileUploadTableName", value=file_upload_table.table_name)
 
         # base = f'{project_code}-{stage_name}-s3'
@@ -88,7 +95,7 @@ class S3TriggerStack(Stack):
         upload_bucket.add_object_removed_notification(remove_notification)
 
         # Grant permissions for Lambda to read/write to the DynamoDB table
-        # file_upload_table.grant_read_write_data(remove_lambda_function)
+        file_upload_table.grant_read_write_data(remove_lambda_function)
 
         # Grant permissions for Lambda to read only from the S3 bucket
         upload_bucket.grant_read(remove_lambda_function)

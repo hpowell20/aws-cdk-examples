@@ -8,14 +8,14 @@ from aws_cdk.core import Construct, CfnOutput, Duration, RemovalPolicy, Stack, T
 
 class RdsStack(Stack):
 
-    def __init__(self, scope: Construct, id: str, project_code: str, stage_name: str, vpc_ref:  ec2.IVpc, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, project_code: str, stage_name: str,
+                 vpc_ref:  ec2.IVpc, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Create the security group for instance
-        rds_access_sg = ec2.SecurityGroup(self, id="rds_access_sg",
+        rds_access_sg = ec2.SecurityGroup(self, id='rds_access_sg',
                                           vpc=vpc_ref,
-                                          security_group_name=f"{stage_name}-db-access-sg"
-        )
+                                          security_group_name=f'{stage_name}-db-access-sg')
 
         Tags.of(rds_access_sg).add('Name', 'Database Instance Access Security Group')
 
@@ -23,12 +23,6 @@ class RdsStack(Stack):
         # to access the database
         rds_access_sg.add_ingress_rule(
             peer=ec2.Peer.ipv4("10.0.0.0/16"),
-            connection=ec2.Port.tcp(5432)
-        )
-
-        # Add all access to the instance; to be replaced
-        rds_access_sg.add_ingress_rule(
-            peer=ec2.Peer.any_ipv4(),
             connection=ec2.Port.tcp(5432)
         )
 
@@ -41,13 +35,18 @@ class RdsStack(Stack):
         delete_automated_backups = True
         deletion_protection = False
 
-        # TODO: Create a random password and set secrets manager values
+        # Set the password for the user
+        database_name = 'test_db'
+        master_username = 'postgres'
+
         instance = rds.DatabaseInstance(self, "PostgresInstance",
+                                        database_name=database_name,
+                                        credentials=rds.Credentials.from_generated_secret(master_username),
                                         instance_identifier=f'{project_code}-{stage_name}-postgres',
                                         engine=rds.DatabaseInstanceEngine.postgres(
                                             version=rds.PostgresEngineVersion.VER_13_1
                                         ),
-                                        auto_minor_version_upgrade=False,
+                                        auto_minor_version_upgrade=True,
                                         storage_encrypted=storage_encrypted,
                                         backup_retention=backup_retention,
                                         vpc=vpc_ref,
@@ -60,6 +59,21 @@ class RdsStack(Stack):
                                         multi_az=multi_az,
                                         delete_automated_backups=delete_automated_backups,
                                         deletion_protection=deletion_protection)
+
+        # Rotate the master user password every 30 days
+        instance.add_rotation_single_user(
+            exclude_characters='!@#$%^&*'
+        )
+
+        # const
+        # dbSecret = instance.node.tryFindChild('Secret') as rds.DatabaseSecret;
+        # const
+        # cfnSecret = dbSecret.node.defaultChild as secrets.CfnSecret;
+        # cfnSecret.addPropertyOverride('GenerateSecretString.ExcludeCharacters', '"@/\\;');
+        # cfnSecret.name = `${props.ssmRoot} / rds /${props.dbname}
+        # `
+
+        # instance.connections.allow_internally(ec2.Port.all_tcp(), 'All traffic within security group')
 
         # Set the stack outputs
         CfnOutput(self, "InstanceArn", value=instance.instance_arn)

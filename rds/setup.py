@@ -18,9 +18,7 @@ setuptools.setup(
     package_dir={"": "rds_instance"},
     packages=setuptools.find_packages(where="rds_instance"),
 
-    install_requires=[
-        "aws-cdk.core==1.103.0"
-    ],
+    install_requires=[],
 
     python_requires=">=3.6",
 

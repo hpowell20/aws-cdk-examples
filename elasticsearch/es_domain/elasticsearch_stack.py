@@ -5,7 +5,7 @@ from aws_cdk import (
 )
 
 
-from aws_cdk.core import Construct, CfnOutput, Stack, Tags
+from aws_cdk.core import Construct, CfnOutput, RemovalPolicy, Stack, Tags
 
 
 class ElasticsearchDomainStack(Stack):
@@ -28,11 +28,6 @@ class ElasticsearchDomainStack(Stack):
         # to access the domain
         es_access_sg.add_ingress_rule(
             peer=ec2.Peer.ipv4("10.0.0.0/16"),
-            connection=ec2.Port.tcp(443)
-        )
-
-        es_access_sg.add_ingress_rule(
-            peer=ec2.Peer.any_ipv4(),
             connection=ec2.Port.tcp(443)
         )
 
@@ -84,6 +79,7 @@ class ElasticsearchDomainStack(Stack):
 
         instance = es.Domain(self, "EsDomain",
                              domain_name=domain_name,
+                             removal_policy=RemovalPolicy.DESTROY,
                              version=es.ElasticsearchVersion.V7_10,
                              enable_version_upgrade=True,
                              capacity=capacity_config,

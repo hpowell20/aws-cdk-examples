@@ -1,7 +1,0 @@
-README.md
-setup.py
-es_domain/project_code_ui.elasticsearch_domain.egg-info/PKG-INFO
-es_domain/project_code_ui.elasticsearch_domain.egg-info/SOURCES.txt
-es_domain/project_code_ui.elasticsearch_domain.egg-info/dependency_links.txt
-es_domain/project_code_ui.elasticsearch_domain.egg-info/requires.txt
-es_domain/project_code_ui.elasticsearch_domain.egg-info/top_level.txt

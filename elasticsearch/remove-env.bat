@@ -19,5 +19,5 @@ if (-Not $args[1]) {
 env=$1
 vpc=$2
 
-npx cdk deploy "*" -c stage_name=$env -c vpc_id=$vpc
+npx cdk destroy "*" -c stage_name=$env -c vpc_id=$vpc
 exit $lastExitCode

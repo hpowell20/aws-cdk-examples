@@ -6,53 +6,21 @@ the static website code:
 - Custom Security Group
 - Elasticsearch Domain
 
+### Project Structure ##
 
-## SSM Parameter Store Configuration (Prior to deployment)
-
-The SSM Parameter Store service will be leveraged to store environment and
-account specific configuration details. These values are set manually via AWS
-console; if you want to change defaults then set the value in ssm and redeploy.
-
-| Key                  | Description                                                            | Default |
-| :------------------- | :--------------------------------------------------------------------- | :------ |
-| base-certificate-arn | REQUIRED! The default ARN for the us-east-1 SSL certificate being used | None    |
-
-** NOTE: **
-
-- This ARN value must be the one for the us-east-1 region
-
-### Project Structure
-
-- The `cdk.json` file tells the CDK Toolkit how to execute your app
+- The `cdk.json` file tells the CDK Toolkit how to execute the application
 - The `setup.py` file defines the modules required to deploy the resources
 - The `app.py` file runs the commands required to deploy the stack
 
 NOTE:
 
-- To add additional dependencies (i.e. - other CDK libraries) simply add them to
-  your `setup.py` file and rerun the `pip install -r requirements.txt` command
+- To add additional dependencies (i.e. - other CDK libraries) simply add them to the `requirements.txt` file and rerun the `pip install -r requirements.txt` command
 
-### NPM Dependencies
-
-Ensure the prerequisites are installed
-
-```
-- Node LTS 12.x (for working with the CDK)
-    - nvm (Node Version Manager) is highly recommended
-```
-
-Install the AWS CDK
-
-```
-npm install -g aws-cdk
-```
-
-### Python Dependencies
+### Python Dependencies ###
 
 Ensure the prerequisites are installed
 
 ```
-- AWS CDK (npm install -g aws-cdk)
 - Python3.8
 - pip (tool for installing Python packages)
 ```
@@ -76,12 +44,12 @@ Install the required python packages
 pip install -r requirements.txt
 ```
 
-### Deploy New Stack
+### Deploy New Stack ###
 
 Synthesize the CloudFormation template
 
 ```
-cdk synth -c stage_name=test
+npx cdk synth -c stage_name=test vpc_id=test
 ```
 
 ** NOTES: **
@@ -91,41 +59,33 @@ cdk synth -c stage_name=test
 Run the script to create the environment
 
 ```
-export AWS_PROFILE=test
-export AWS_ACCOUNT=123456789
-export AWS_REGION=ca-central-1
-./deploy-env.sh <stage_name>
+export AWS_PROFILE=<profile_name>
+export AWS_ACCOUNT=<account_id>
+export AWS_REGION=<region_name>
+./deploy-env.sh <stage_name> <vpc_id>
 ```
 
-** NOTES: **
+** NOTE: **
+- Replace values with your account details
 
-- Replace **test** with your assume role profile name
-- Replace **123456789** with the AWS account ID
-- Please include your name for the stage name if you want to create custom AWS
-  stack for testing purposes
-
-### Remove Existing Stack
+### Remove Existing Stack ###
 
 Run the script to destroy the environment
 
 ```
-export AWS_PROFILE=test
-export AWS_ACCOUNT=123456789
-export AWS_REGION=ca-central-1
-./remove-env.sh <stage_name>
+export AWS_PROFILE=<profile_name>
+export AWS_ACCOUNT=<account_id>
+export AWS_REGION=<region_name>
+./remove-env.sh <stage_name> <vpc_id>
 ```
 
-** NOTES: **
+** NOTE: **
+- Replace values with your account details
 
-- Replace **test** with your assume role profile name
-- Replace **123456789** with the AWS account ID
-- Please include your name for the stage name if you want to create custom AWS
-  stack for testing purposes
+### Useful commands ###
 
-### Useful commands
-
-- `cdk ls` list all stacks in the app
-- `cdk synth` emits the synthesized CloudFormation template
-- `cdk deploy` deploy this stack to your default AWS account/region
-- `cdk diff` compare deployed stack with current state
-- `cdk docs` open CDK documentation
+- `npx cdk ls` list all stacks in the app
+- `npx cdk synth` emits the synthesized CloudFormation template
+- `npx cdk deploy` deploy this stack to your default AWS account/region
+- `npx cdk diff` compare deployed stack with current state
+- `npx cdk docs` open CDK documentation

@@ -18,9 +18,7 @@ setuptools.setup(
     package_dir={"": "es_domain"},
     packages=setuptools.find_packages(where="es_domain"),
 
-    install_requires=[
-        "aws-cdk.core==1.94.1"
-    ],
+    install_requires=[],
 
     python_requires=">=3.6",
 

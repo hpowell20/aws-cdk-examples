@@ -2,13 +2,8 @@
 set -e
 cd $(dirname $0)
 
-if [ -z $AWS_ACCOUNT ] ; then
-  echo 'Please set the environment variable AWS_ACCOUNT before running this script'
-  exit 1
-fi
-
-if [ -z $AWS_REGION ] ; then
-  echo 'Please set the environment variable AWS_REGION before running this script'
+if [ -z $AWS_PROFILE ] ; then
+  echo 'Please set the environment variable AWS_PROFILE before running this script'
   exit 1
 fi
 
@@ -27,4 +22,4 @@ fi
 env=$1
 vpc=$2
 
-npx cdk deploy -c environment_name=$env -c vpc_id=$vpc
+npx cdk deploy "*" -c stage_name=$env -c vpc_id=$vpc

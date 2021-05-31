@@ -5,7 +5,8 @@ from aws_cdk import core
 from es_domain.elasticsearch_stack import ElasticsearchDomainStack
 
 # Set the values to be used in the stack
-PROJECT_CODE = 'project-code'  #TODO: Change me
+# PROJECT_CODE = 'project-code'  #TODO: Change me
+PROJECT_CODE = 'servus-api'
 
 app = core.App()
 

@@ -54,11 +54,12 @@ class ElasticsearchDomainStack(Stack):
             volume_type=ec2.EbsDeviceVolumeType.GP2
         )
 
+        domain_arn = f'arn:aws:es:{self.region}:{self.account}:domain/{domain_name}/*'
         access_policy = iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
             principals=[iam.AnyPrincipal()],
             actions=['es:ESHttp*'],
-            resources=[f'arn:aws:es:{self.region}:{self.account}:domain/{domain_name}/*']
+            resources=[domain_arn]
         )
 
         zone_awareness = es.ZoneAwarenessConfig(
@@ -84,7 +85,8 @@ class ElasticsearchDomainStack(Stack):
                              enable_version_upgrade=True,
                              capacity=capacity_config,
                              ebs=ebs_options,
-                             access_policies=[access_policy],
+                             # TODO: Identify the correct access policy permissions and re-apply
+                             # access_policies=[access_policy],
                              zone_awareness=zone_awareness,
                              logging=logging_options,
                              automated_snapshot_start_hour=10,

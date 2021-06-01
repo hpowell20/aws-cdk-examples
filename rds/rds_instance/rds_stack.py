@@ -1,6 +1,10 @@
+import json
+
 from aws_cdk import (
     aws_ec2 as ec2,
-    aws_rds as rds
+    aws_rds as rds,
+    aws_secretsmanager as secrets,
+    aws_ssm as ssm,
 )
 
 from aws_cdk.core import Construct, CfnOutput, Duration, RemovalPolicy, Stack, Tags
@@ -9,13 +13,14 @@ from aws_cdk.core import Construct, CfnOutput, Duration, RemovalPolicy, Stack, T
 class RdsStack(Stack):
 
     def __init__(self, scope: Construct, id: str, project_code: str, stage_name: str,
-                 vpc_ref:  ec2.IVpc, **kwargs) -> None:
+                 vpc_ref: ec2.IVpc, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # Create the security group for instance
         rds_access_sg = ec2.SecurityGroup(self, id='rds_access_sg',
                                           vpc=vpc_ref,
-                                          security_group_name=f'{stage_name}-db-access-sg')
+                                          security_group_name=f'{stage_name}-db-access-sg',
+                                          allow_all_outbound=False)
 
         Tags.of(rds_access_sg).add('Name', 'Database Instance Access Security Group')
 
@@ -35,13 +40,31 @@ class RdsStack(Stack):
         delete_automated_backups = True
         deletion_protection = False
 
-        # Set the password for the user
+        # Create the database credentials
         database_name = 'test_db'
         master_username = 'postgres'
 
+        secret_name = f'{project_code}/{stage_name}/Postgres'
+        db_credentials_secret = secrets.Secret(self, id=f'{stage_name}-db-credentials-secret',
+                                               removal_policy=RemovalPolicy.DESTROY,
+                                               secret_name=secret_name,
+                                               generate_secret_string=secrets.SecretStringGenerator(
+                                                   secret_string_template=json.dumps({'username': master_username}),
+                                                   exclude_punctuation=True,
+                                                   include_space=False,
+                                                   generate_string_key='password'
+                                               ))
+
+        # Store the secret key name in SSM
+        key_name = f"{project_code}-{stage_name}-db-secret-name"
+        ssm.StringParameter(self, 'DbCredentialsSecretName',
+                            parameter_name=key_name,
+                            string_value=secret_name)
+
         instance = rds.DatabaseInstance(self, "PostgresInstance",
                                         database_name=database_name,
-                                        credentials=rds.Credentials.from_generated_secret(master_username),
+                                        # credentials=rds.Credentials.from_generated_secret(master_username),
+                                        credentials=rds.Credentials.from_secret(db_credentials_secret),
                                         instance_identifier=f'{project_code}-{stage_name}-postgres',
                                         engine=rds.DatabaseInstanceEngine.postgres(
                                             version=rds.PostgresEngineVersion.VER_13_1
@@ -64,14 +87,6 @@ class RdsStack(Stack):
         instance.add_rotation_single_user(
             exclude_characters='!@#$%^&*'
         )
-
-        # const
-        # dbSecret = instance.node.tryFindChild('Secret') as rds.DatabaseSecret;
-        # const
-        # cfnSecret = dbSecret.node.defaultChild as secrets.CfnSecret;
-        # cfnSecret.addPropertyOverride('GenerateSecretString.ExcludeCharacters', '"@/\\;');
-        # cfnSecret.name = `${props.ssmRoot} / rds /${props.dbname}
-        # `
 
         # instance.connections.allow_internally(ec2.Port.all_tcp(), 'All traffic within security group')
 

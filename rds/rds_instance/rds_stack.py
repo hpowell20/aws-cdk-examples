@@ -19,8 +19,7 @@ class RdsStack(Stack):
         # Create the security group for instance
         rds_access_sg = ec2.SecurityGroup(self, id='rds_access_sg',
                                           vpc=vpc_ref,
-                                          security_group_name=f'{stage_name}-db-access-sg',
-                                          allow_all_outbound=False)
+                                          security_group_name=f'{stage_name}-db-access-sg')
 
         Tags.of(rds_access_sg).add('Name', 'Database Instance Access Security Group')
 
@@ -63,7 +62,6 @@ class RdsStack(Stack):
 
         instance = rds.DatabaseInstance(self, "PostgresInstance",
                                         database_name=database_name,
-                                        # credentials=rds.Credentials.from_generated_secret(master_username),
                                         credentials=rds.Credentials.from_secret(db_credentials_secret),
                                         instance_identifier=f'{project_code}-{stage_name}-postgres',
                                         engine=rds.DatabaseInstanceEngine.postgres(

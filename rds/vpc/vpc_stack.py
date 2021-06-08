@@ -23,7 +23,7 @@ class VpcStack(Stack):
             cidr_mask=24)
 
         # Create the VPC
-        vpc_name = f"{stage_name}-custom-vpc"
+        vpc_name = f'{stage_name}-custom-vpc'
         vpc = ec2.Vpc(self, vpc_name,
                       cidr="10.0.0.0/16",
                       max_azs=2,
